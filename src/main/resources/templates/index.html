@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecteur Audio - Intégré avec Base de Données</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .search-section {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .search-box button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .search-box button:hover {
+            background: #5a6fd8;
+        }
+
+        .audio-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .audio-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .audio-item:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .audio-item.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .audio-info {
+            flex: 1;
+        }
+
+        .audio-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .audio-details {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .audio-duration {
+            font-size: 0.9em;
+            color: #666;
+            margin-left: 10px;
+        }
+
+        .player-section {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .current-track {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .current-track h2 {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .current-track p {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .audio-player {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .audio-player audio {
+            width: 100%;
+            height: 50px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .control-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .control-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        .track-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 Lecteur Audio</h1>
+            <p>Votre collection musicale</p>
+        </div>
+
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Rechercher par titre, artiste ou nom de fichier...">
+                <button onclick="searchAudio()">Rechercher</button>
+                <button onclick="loadAllAudio()">Tout afficher</button>
+            </div>
+        </div>
+
+        <div class="audio-list" id="audioList">
+            <div class="loading">Chargement des fichiers audio...</div>
+        </div>
+
+        <div class="player-section">
+            <div class="current-track" id="currentTrack">
+                <h2 id="currentTitle">Aucun fichier sélectionné</h2>
+                <p id="currentArtist">Sélectionnez un fichier audio pour commencer</p>
+                <p id="currentAlbum"></p>
+            </div>
+
+            <div class="audio-player">
+                <audio id="audioPlayer" controls style="width: 100%;">
+                    Votre navigateur ne supporte pas l'élément audio.
+                </audio>
+                
+                <div class="track-progress">
+                    <span id="currentTime">00:00</span>
+                    <span>/</span>
+                    <span id="duration">00:00</span>
+                </div>
+
+                <div class="controls">
+                    <button class="control-btn" onclick="previousTrack()" id="prevBtn" disabled>⏮️ Précédent</button>
+                    <button class="control-btn" onclick="togglePlay()" id="playBtn">▶️ Lecture</button>
+                    <button class="control-btn" onclick="nextTrack()" id="nextBtn" disabled>⏭️ Suivant</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let audioFiles = [];
+        let currentTrackIndex = -1;
+        let audioPlayer = document.getElementById('audioPlayer');
+
+        // Charger tous les fichiers audio au démarrage
+        window.onload = function() {
+            loadAllAudio();
+        };
+
+        // Fonction pour charger tous les fichiers audio
+        async function loadAllAudio() {
+            try {
+                const response = await fetch('http://localhost:8080/api/audio/list');
+                if (!response.ok) {
+                    throw new Error('Erreur lors du chargement des fichiers');
+                }
+                
+                audioFiles = await response.json();
+                displayAudioList(audioFiles);
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('audioList').innerHTML = 
+                    '<div class="error">Erreur lors du chargement des fichiers audio. Vérifiez que le serveur est démarré.</div>';
+            }
+        }
+
+        // Fonction pour rechercher des fichiers audio
+        async function searchAudio() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) {
+                loadAllAudio();
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/api/audio/search?query=${encodeURIComponent(query)}`);
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la recherche');
+                }
+                
+                const results = await response.json();
+                displayAudioList(results);
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('audioList').innerHTML = 
+                    '<div class="error">Erreur lors de la recherche.</div>';
+            }
+        }
+
+        // Fonction pour afficher la liste des fichiers audio
+        function displayAudioList(files) {
+            const audioList = document.getElementById('audioList');
+            
+            if (files.length === 0) {
+                audioList.innerHTML = '<div class="no-results">Aucun fichier trouvé</div>';
+                return;
+            }
+
+            audioList.innerHTML = files.map((file, index) => `
+                <div class="audio-item" onclick="playAudio(${index})">
+                    <div class="audio-info">
+                        <div class="audio-title">${file.title || 'Titre inconnu'}</div>
+                        <div class="audio-details">
+                            ${file.author || 'Artiste inconnu'} 
+                            ${file.albumDispName ? '• ' + file.albumDispName : ''}
+                        </div>
+                    </div>
+                    <div class="audio-duration">${file.duree || '--:--'}</div>
+                </div>
+            `).join('');
+
+            // Mettre à jour les boutons de contrôle
+            updateControlButtons();
+        }
+
+        // Fonction pour jouer un fichier audio
+        function playAudio(index) {
+            if (index < 0 || index >= audioFiles.length) return;
+
+            currentTrackIndex = index;
+            const file = audioFiles[index];
+            
+            // Mettre à jour l'affichage de la piste actuelle
+            document.getElementById('currentTitle').textContent = file.title || 'Titre inconnu';
+            document.getElementById('currentArtist').textContent = file.author || 'Artiste inconnu';
+            document.getElementById('currentAlbum').textContent = file.albumDispName || '';
+
+            // Charger le fichier audio
+            audioPlayer.src = `http://localhost:8080/api/audio/stream/${file.soundfileName}`;
+            audioPlayer.load();
+
+            // Mettre à jour la classe active
+            document.querySelectorAll('.audio-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+
+            // Mettre à jour les boutons de contrôle
+            updateControlButtons();
+        }
+
+        // Fonction pour basculer lecture/pause
+        function togglePlay() {
+            if (currentTrackIndex === -1) return;
+
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                document.getElementById('playBtn').textContent = '⏸️ Pause';
+            } else {
+                audioPlayer.pause();
+                document.getElementById('playBtn').textContent = '▶️ Lecture';
+            }
+        }
+
+        // Fonction pour piste précédente
+        function previousTrack() {
+            if (currentTrackIndex > 0) {
+                playAudio(currentTrackIndex - 1);
+            }
+        }
+
+        // Fonction pour piste suivante
+        function nextTrack() {
+            if (currentTrackIndex < audioFiles.length - 1) {
+                playAudio(currentTrackIndex + 1);
+            }
+        }
+
+        // Mettre à jour les boutons de contrôle
+        function updateControlButtons() {
+            document.getElementById('prevBtn').disabled = currentTrackIndex <= 0;
+            document.getElementById('nextBtn').disabled = currentTrackIndex >= audioFiles.length - 1;
+        }
+
+        // Événements du lecteur audio
+        audioPlayer.addEventListener('play', () => {
+            document.getElementById('playBtn').textContent = '⏸️ Pause';
+        });
+
+        audioPlayer.addEventListener('pause', () => {
+            document.getElementById('playBtn').textContent = '▶️ Lecture';
+        });
+
+        audioPlayer.addEventListener('ended', () => {
+            // Passer à la piste suivante automatiquement
+            if (currentTrackIndex < audioFiles.length - 1) {
+                nextTrack();
+            }
+        });
+
+        // Mettre à jour le temps de lecture
+        audioPlayer.addEventListener('timeupdate', () => {
+            const currentTime = formatTime(audioPlayer.currentTime);
+            const duration = formatTime(audioPlayer.duration);
+            
+            document.getElementById('currentTime').textContent = currentTime;
+            document.getElementById('duration').textContent = duration;
+        });
+
+        // Fonction pour formater le temps
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '00:00';
+            
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // Recherche en temps réel
+        document.getElementById('searchInput').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                searchAudio();
+            }
+        });
+    </script>
+</body>
+</html>
