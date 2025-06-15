@@ -1,196 +1,127 @@
 package com.example.audioplayer.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "java_test") // Nom de votre table dans la BDD
+@Table(name = "test_1")
 public class AudioFileInfo {
-    
+
     @Id
     @Column(name = "title_id")
-    private Long titleId;
-    
+    private String titleId;
+
     @Column(name = "title")
     private String title;
-    
+
     @Column(name = "soundfile_name")
     private String soundfileName;
-    
+
     @Column(name = "author")
     private String author;
-    
+
     @Column(name = "duree_ms")
-    private Long dureeMs;
-    
+    private String dureeMs;
+
     @Column(name = "duree")
     private String duree;
-    
+
     @Column(name = "is_online")
-    private Integer isOnline;
-    
+    private String isOnline;
+
     @Column(name = "record_date")
-    private LocalDateTime recordDate;
-    
+    private String recordDate;
+
     @Column(name = "last_modif_time")
-    private LocalDateTime lastModifTime;
-    
+    private String lastModifTime;
+
     @Column(name = "interpret")
     private String interpret;
-    
+
     @Column(name = "keywords")
     private String keywords;
-    
-    @Column(name = "company_disp_name")
-    private String companyDispName;
-    
+
+    @Column(name = "compagny_disp_name")
+    private String compagnyDispName;
+
     @Column(name = "album_disp_name")
     private String albumDispName;
-    
+
     @Column(name = "commentaire1")
     private String commentaire1;
-    
+
     @Column(name = "commentaire2")
     private String commentaire2;
 
-    // Constructeurs
+    @Column(name = "commentaire3")
+    private String commentaire3;
+
+    @Column(name = "class_code")
+    private String classCode;
+
+    @Column(name = "class_name")
+    private String className;
+
+    @Column(name = "class_id")
+    private String classId;
+
     public AudioFileInfo() {}
 
-    public AudioFileInfo(String title, String soundfileName, String author) {
-        this.title = title;
-        this.soundfileName = soundfileName;
-        this.author = author;
-    }
+    // -- Getters & Setters --
 
-    // Getters et Setters
-    public Long getTitleId() {
-        return titleId;
-    }
+    public String getTitleId() { return titleId; }
+    public void setTitleId(String titleId) { this.titleId = titleId; }
 
-    public void setTitleId(Long titleId) {
-        this.titleId = titleId;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getSoundfileName() { return soundfileName; }
+    public void setSoundfileName(String soundfileName) { this.soundfileName = soundfileName; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public String getAuthor() { return author; }
+    public void setAuthor(String author) { this.author = author; }
 
-    public String getSoundfileName() {
-        return soundfileName;
-    }
+    public String getDureeMs() { return dureeMs; }
+    public void setDureeMs(String dureeMs) { this.dureeMs = dureeMs; }
 
-    public void setSoundfileName(String soundfileName) {
-        this.soundfileName = soundfileName;
-    }
+    public String getDuree() { return duree; }
+    public void setDuree(String duree) { this.duree = duree; }
 
-    public String getAuthor() {
-        return author;
-    }
+    public String getIsOnline() { return isOnline; }
+    public void setIsOnline(String isOnline) { this.isOnline = isOnline; }
 
-    public void setAuthor(String author) {
-        this.author = author;
-    }
+    public String getRecordDate() { return recordDate; }
+    public void setRecordDate(String recordDate) { this.recordDate = recordDate; }
 
-    public Long getDureeMs() {
-        return dureeMs;
-    }
+    public String getLastModifTime() { return lastModifTime; }
+    public void setLastModifTime(String lastModifTime) { this.lastModifTime = lastModifTime; }
 
-    public void setDureeMs(Long dureeMs) {
-        this.dureeMs = dureeMs;
-    }
+    public String getInterpret() { return interpret; }
+    public void setInterpret(String interpret) { this.interpret = interpret; }
 
-    public String getDuree() {
-        return duree;
-    }
+    public String getKeywords() { return keywords; }
+    public void setKeywords(String keywords) { this.keywords = keywords; }
 
-    public void setDuree(String duree) {
-        this.duree = duree;
-    }
+    public String getCompagnyDispName() { return compagnyDispName; }
+    public void setCompagnyDispName(String compagnyDispName) { this.compagnyDispName = compagnyDispName; }
 
-    public Integer getIsOnline() {
-        return isOnline;
-    }
+    public String getAlbumDispName() { return albumDispName; }
+    public void setAlbumDispName(String albumDispName) { this.albumDispName = albumDispName; }
 
-    public void setIsOnline(Integer isOnline) {
-        this.isOnline = isOnline;
-    }
+    public String getCommentaire1() { return commentaire1; }
+    public void setCommentaire1(String commentaire1) { this.commentaire1 = commentaire1; }
 
-    public LocalDateTime getRecordDate() {
-        return recordDate;
-    }
+    public String getCommentaire2() { return commentaire2; }
+    public void setCommentaire2(String commentaire2) { this.commentaire2 = commentaire2; }
 
-    public void setRecordDate(LocalDateTime recordDate) {
-        this.recordDate = recordDate;
-    }
+    public String getCommentaire3() { return commentaire3; }
+    public void setCommentaire3(String commentaire3) { this.commentaire3 = commentaire3; }
 
-    public LocalDateTime getLastModifTime() {
-        return lastModifTime;
-    }
+    public String getClassCode() { return classCode; }
+    public void setClassCode(String classCode) { this.classCode = classCode; }
 
-    public void setLastModifTime(LocalDateTime lastModifTime) {
-        this.lastModifTime = lastModifTime;
-    }
+    public String getClassName() { return className; }
+    public void setClassName(String className) { this.className = className; }
 
-    public String getInterpret() {
-        return interpret;
-    }
-
-    public void setInterpret(String interpret) {
-        this.interpret = interpret;
-    }
-
-    public String getKeywords() {
-        return keywords;
-    }
-
-    public void setKeywords(String keywords) {
-        this.keywords = keywords;
-    }
-
-    public String getCompanyDispName() {
-        return companyDispName;
-    }
-
-    public void setCompanyDispName(String companyDispName) {
-        this.companyDispName = companyDispName;
-    }
-
-    public String getAlbumDispName() {
-        return albumDispName;
-    }
-
-    public void setAlbumDispName(String albumDispName) {
-        this.albumDispName = albumDispName;
-    }
-
-    public String getCommentaire1() {
-        return commentaire1;
-    }
-
-    public void setCommentaire1(String commentaire1) {
-        this.commentaire1 = commentaire1;
-    }
-
-    public String getCommentaire2() {
-        return commentaire2;
-    }
-
-    public void setCommentaire2(String commentaire2) {
-        this.commentaire2 = commentaire2;
-    }
-
-    @Override
-    public String toString() {
-        return "AudioFileInfo{" +
-                "titleId=" + titleId +
-                ", title='" + title + '\'' +
-                ", soundfileName='" + soundfileName + '\'' +
-                ", author='" + author + '\'' +
-                ", duree='" + duree + '\'' +
-                '}';
-    }
+    public String getClassId() { return classId; }
+    public void setClassId(String classId) { this.classId = classId; }
 }

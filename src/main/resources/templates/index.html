@@ -74,6 +74,33 @@
             background: #5a6fd8;
         }
 
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .filter-tag {
+            padding: 6px 12px;
+            background: #e9ecef;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-tag:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .filter-tag.active {
+            background: #667eea;
+            color: white;
+        }
+
         .audio-list {
             max-height: 400px;
             overflow-y: auto;
@@ -90,6 +117,7 @@
             cursor: pointer;
             transition: all 0.3s;
             background: white;
+            position: relative;
         }
 
         .audio-item:hover {
@@ -105,25 +133,102 @@
             border-color: #667eea;
         }
 
+        .audio-item.no-metadata {
+            border-left: 4px solid #ffc107;
+        }
+
+        .audio-item.no-metadata::before {
+            content: "⚠️";
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .audio-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .audio-item.active .audio-icon {
+            background: rgba(255,255,255,0.2);
+        }
+
         .audio-info {
             flex: 1;
+            min-width: 0;
         }
 
         .audio-title {
             font-weight: bold;
             font-size: 1.1em;
             margin-bottom: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .audio-details {
             font-size: 0.9em;
             opacity: 0.8;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .audio-tag {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+
+        .audio-item.active .audio-tag {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .audio-metadata {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: 0.85em;
+        }
+
+        .metadata-missing {
+            color: #ffc107;
+            font-style: italic;
+        }
+
+        .audio-item.active .metadata-missing {
+            color: rgba(255,255,255,0.8);
         }
 
         .audio-duration {
             font-size: 0.9em;
             color: #666;
             margin-left: 10px;
+            font-weight: 600;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+
+        .audio-item.active .audio-duration {
+            background: rgba(255,255,255,0.2);
+            color: white;
         }
 
         .player-section {
@@ -146,6 +251,29 @@
             font-size: 1.2em;
             color: #666;
             margin-bottom: 5px;
+        }
+
+        .current-track .metadata-status {
+            font-size: 0.9em;
+            padding: 5px 10px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .metadata-complete {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .metadata-partial {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .metadata-none {
+            background: #f8d7da;
+            color: #721c24;
         }
 
         .audio-player {
@@ -218,6 +346,24 @@
             padding: 40px;
             color: #666;
         }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .file-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -233,6 +379,14 @@
                 <button onclick="searchAudio()">Rechercher</button>
                 <button onclick="loadAllAudio()">Tout afficher</button>
             </div>
+            
+            <div class="filter-section">
+                <span>Filtrer par :</span>
+                <div class="filter-tag active" onclick="filterByMetadata('all')">Tous</div>
+                <div class="filter-tag" onclick="filterByMetadata('complete')">Métadonnées complètes</div>
+                <div class="filter-tag" onclick="filterByMetadata('partial')">Métadonnées partielles</div>
+                <div class="filter-tag" onclick="filterByMetadata('none')">Sans métadonnées</div>
+            </div>
         </div>
 
         <div class="audio-list" id="audioList">
@@ -244,6 +398,8 @@
                 <h2 id="currentTitle">Aucun fichier sélectionné</h2>
                 <p id="currentArtist">Sélectionnez un fichier audio pour commencer</p>
                 <p id="currentAlbum"></p>
+                <div id="metadataStatus" class="metadata-status" style="display: none;"></div>
+                <div id="fileInfo" class="file-info" style="display: none;"></div>
             </div>
 
             <div class="audio-player">
@@ -270,6 +426,7 @@
         let audioFiles = [];
         let currentTrackIndex = -1;
         let audioPlayer = document.getElementById('audioPlayer');
+        let currentFilter = 'all';
 
         // Charger tous les fichiers audio au démarrage
         window.onload = function() {
@@ -316,27 +473,98 @@
             }
         }
 
+        // Fonction pour extraire le nom du fichier sans extension
+        function getFileNameWithoutExtension(filename) {
+            if (!filename) return 'Fichier inconnu';
+            return filename.replace(/\.[^/.]+$/, "");
+        }
+
+        // Fonction pour déterminer le statut des métadonnées
+        function getMetadataStatus(file) {
+            const hasTitle = file.title && file.title.trim() !== '';
+            const hasArtist = file.author && file.author.trim() !== '';
+            const hasAlbum = file.albumDispName && file.albumDispName.trim() !== '';
+            
+            if (hasTitle && hasArtist && hasAlbum) return 'complete';
+            if (hasTitle || hasArtist || hasAlbum) return 'partial';
+            return 'none';
+        }
+
+        // Fonction pour filtrer par statut des métadonnées
+        function filterByMetadata(filter) {
+            currentFilter = filter;
+            
+            // Mettre à jour l'interface des filtres
+            document.querySelectorAll('.filter-tag').forEach(tag => {
+                tag.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            displayAudioList(audioFiles);
+        }
+
         // Fonction pour afficher la liste des fichiers audio
         function displayAudioList(files) {
             const audioList = document.getElementById('audioList');
             
-            if (files.length === 0) {
-                audioList.innerHTML = '<div class="no-results">Aucun fichier trouvé</div>';
+            // Filtrer selon le filtre actuel
+            let filteredFiles = files;
+            if (currentFilter !== 'all') {
+                filteredFiles = files.filter(file => {
+                    const status = getMetadataStatus(file);
+                    return status === currentFilter;
+                });
+            }
+            
+            if (filteredFiles.length === 0) {
+                audioList.innerHTML = '<div class="no-results">Aucun fichier trouvé pour ce filtre</div>';
                 return;
             }
 
-            audioList.innerHTML = files.map((file, index) => `
-                <div class="audio-item" onclick="playAudio(${index})">
-                    <div class="audio-info">
-                        <div class="audio-title">${file.title || 'Titre inconnu'}</div>
-                        <div class="audio-details">
-                            ${file.author || 'Artiste inconnu'} 
-                            ${file.albumDispName ? '• ' + file.albumDispName : ''}
-                        </div>
-                    </div>
-                    <div class="audio-duration">${file.duree || '--:--'}</div>
+            // Statistiques
+            const stats = {
+                total: files.length,
+                complete: files.filter(f => getMetadataStatus(f) === 'complete').length,
+                partial: files.filter(f => getMetadataStatus(f) === 'partial').length,
+                none: files.filter(f => getMetadataStatus(f) === 'none').length
+            };
+
+            const statsHtml = `
+                <div class="stats">
+                    <span>Total: ${stats.total} fichiers</span>
+                    <span>Complètes: ${stats.complete} | Partielles: ${stats.partial} | Manquantes: ${stats.none}</span>
                 </div>
-            `).join('');
+            `;
+
+            audioList.innerHTML = statsHtml + filteredFiles.map((file, index) => {
+                const originalIndex = files.indexOf(file);
+                const metadataStatus = getMetadataStatus(file);
+                const displayTitle = file.title && file.title.trim() !== '' ? 
+                    file.title : getFileNameWithoutExtension(file.soundfileName);
+                const displayArtist = file.author && file.author.trim() !== '' ? 
+                    file.author : 'Artiste inconnu';
+                const displayAlbum = file.albumDispName && file.albumDispName.trim() !== '' ? 
+                    file.albumDispName : '';
+
+                return `
+                    <div class="audio-item ${metadataStatus === 'none' ? 'no-metadata' : ''}" onclick="playAudio(${originalIndex})">
+                        <div class="audio-icon">🎵</div>
+                        <div class="audio-info">
+                            <div class="audio-title">${displayTitle}</div>
+                            <div class="audio-details">
+                                <div class="audio-metadata">
+                                    <span>${displayArtist}</span>
+                                    ${displayAlbum ? `<span>${displayAlbum}</span>` : ''}
+                                    ${metadataStatus === 'none' ? '<span class="metadata-missing">Métadonnées manquantes</span>' : ''}
+                                    ${metadataStatus === 'partial' ? '<span class="metadata-missing">Métadonnées incomplètes</span>' : ''}
+                                </div>
+                                ${metadataStatus === 'complete' ? '<div class="audio-tag">Métadonnées complètes</div>' : ''}
+                            </div>
+                        </div>
+                        <div class="audio-duration">${file.duree || '--:--'}</div>
+                    </div>
+                `;
+            }).join('');
 
             // Mettre à jour les boutons de contrôle
             updateControlButtons();
@@ -348,11 +576,50 @@
 
             currentTrackIndex = index;
             const file = audioFiles[index];
+            const metadataStatus = getMetadataStatus(file);
+            
+            // Déterminer les informations d'affichage
+            const displayTitle = file.title && file.title.trim() !== '' ? 
+                file.title : getFileNameWithoutExtension(file.soundfileName);
+            const displayArtist = file.author && file.author.trim() !== '' ? 
+                file.author : 'Artiste inconnu';
+            const displayAlbum = file.albumDispName && file.albumDispName.trim() !== '' ? 
+                file.albumDispName : '';
             
             // Mettre à jour l'affichage de la piste actuelle
-            document.getElementById('currentTitle').textContent = file.title || 'Titre inconnu';
-            document.getElementById('currentArtist').textContent = file.author || 'Artiste inconnu';
-            document.getElementById('currentAlbum').textContent = file.albumDispName || '';
+            document.getElementById('currentTitle').textContent = displayTitle;
+            document.getElementById('currentArtist').textContent = displayArtist;
+            document.getElementById('currentAlbum').textContent = displayAlbum;
+
+            // Afficher le statut des métadonnées
+            const metadataStatusEl = document.getElementById('metadataStatus');
+            const fileInfoEl = document.getElementById('fileInfo');
+            
+            metadataStatusEl.style.display = 'inline-block';
+            metadataStatusEl.className = 'metadata-status';
+            
+            switch(metadataStatus) {
+                case 'complete':
+                    metadataStatusEl.classList.add('metadata-complete');
+                    metadataStatusEl.textContent = '✅ Métadonnées complètes';
+                    break;
+                case 'partial':
+                    metadataStatusEl.classList.add('metadata-partial');
+                    metadataStatusEl.textContent = '⚠️ Métadonnées incomplètes';
+                    break;
+                case 'none':
+                    metadataStatusEl.classList.add('metadata-none');
+                    metadataStatusEl.textContent = '❌ Métadonnées manquantes';
+                    break;
+            }
+
+            // Informations techniques du fichier
+            fileInfoEl.style.display = 'block';
+            fileInfoEl.innerHTML = `
+                <strong>Fichier :</strong> ${file.soundfileName || 'Nom inconnu'}<br>
+                <strong>Durée :</strong> ${file.duree || 'Inconnue'}
+                ${file.bitrate ? `<br><strong>Qualité :</strong> ${file.bitrate}` : ''}
+            `;
 
             // Charger le fichier audio
             audioPlayer.src = `http://localhost:8080/api/audio/stream/${file.soundfileName}`;

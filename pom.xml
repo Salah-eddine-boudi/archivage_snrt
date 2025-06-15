@@ -1,65 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
+    <!-- 1) Passe au parent 3.5.0 -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
+        <version>3.5.0</version>
         <relativePath/>
     </parent>
-    
+
     <groupId>com.example</groupId>
     <artifactId>audioplayer</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>audioplayer</name>
     <description>Audio Player Application</description>
-    
+
+    <!-- 2) Properties -->
     <properties>
+        <!-- on reste sur Java 17, qui est supporté par SB 3.5.x -->
         <java.version>17</java.version>
     </properties>
-    
+
     <dependencies>
-        <!-- Spring Boot Starter Web -->
+        <!-- Web MVC + Tomcat embarqué -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        
-        <!-- Spring Boot Starter Data JPA (contient JDBC et DataSource) -->
+
+        <!-- JPA + Hibernate + DataSource -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-        
-        <!-- MySQL Connector -->
+
+        <!-- Connecteur MySQL -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.33</version>
             <scope>runtime</scope>
         </dependency>
-        
-        <!-- Spring Boot Starter Thymeleaf -->
+
+        <!-- Thymeleaf pour les vues (si tu en as besoin) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
-        
-        <!-- Spring Boot Starter Test -->
+
+        <!-- Tests unitaires -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
     <build>
         <plugins>
+            <!-- Plugin Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
+
 </project>
